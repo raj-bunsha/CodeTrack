@@ -1,4 +1,4 @@
-## [CodeTrack]
+## CodeTrack
 Virtual rating system for codeforces using codeforces API.
 Gnome Extension that integrates well with your linux enviroment
 
