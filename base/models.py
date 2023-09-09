@@ -14,6 +14,7 @@ class Problem(models.Model):
     name = models.CharField(max_length=200, default="codeforces")
     rating = models.IntegerField(default=1500)
     index = models.CharField(max_length=4, default="A")
+    tags=models.CharField(max_length=1000, default="[]")
 
     def __str__(self):
         return (
@@ -71,3 +72,8 @@ TODO: Fix this with async / celery later
 
 class FetchData(models.Model):
     last_update = models.DateTimeField(auto_now_add=True)
+
+# class BookMarks(models.Model):
+#     user=models.ForeignKey(User, on_delete=models.CASCADE)
+#     problems = models.ManyToManyField(Problem)
+#     name=models.CharField(max_length=100, default="New List")

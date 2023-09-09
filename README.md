@@ -1,5 +1,6 @@
-## [Arugo](https://arugo.herokuapp.com/)
+## [CodeTrack](https://arugo.herokuapp.com/)
 Virtual rating system for codeforces using codeforces API.
+Gnome Extension that integrates well with your linux enviroment
 
 ## Features:
 - Problems suggestion.
@@ -11,31 +12,23 @@ Virtual rating system for codeforces using codeforces API.
 - [Django framework](https://www.djangoproject.com/)
 - [Codeforces API](https://codeforces.com/apiHelp)
 - [Matplotlib](https://matplotlib.org/)
-- [MongoDB & djongo](https://www.mongodb.com/compatibility/mongodb-and-django)
+
 ## Setup:
 It is ideal to use virtualenv.
 
 ### 1. Fork and clone this project
 ```
-$ git clone https://github.com/polarity-cf/arugo.git
+$ git clone https://github.com/raj-bunsha/CodeTrack.git
 ```
 ### 2. Install dependencies
 ```
 $ pip install -r requirements.txt
 ```
-### 3. Set environment variables
-Create ```.env``` file in the ```arugo``` folder.
-Change the settings as follow, with your mongodb link:
-```
-SECRET_KEY = '<Generate your key @ https://djecrety.ir/>'
-DEBUG = True
-DB_URL = 'mongodb+srv://<username>:<password>@<atlas cluster>/<myFirstDatabase>?retryWrites=true&w=majority'
-```
-### 4. Migrate
+### 3. Migrate
 ```
 $ python manage.py migrate
 ```
-### 5. Fetch the problemset
+### 4. Fetch the problemset
 Run the shell
 ```
 $ python manage.py shell
@@ -44,4 +37,8 @@ Run the script
 ```
 $ from base.util import fetch_problemset
 $ fetch_problemset()
+```
+### 5. Install as Gnome Extension
+```
+
 ```

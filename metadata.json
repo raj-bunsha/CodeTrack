@@ -1,0 +1,16 @@
+{
+    "name": "CodeTrackExtension",
+    "description": "Runs Python server with a click",
+    "uuid": "codetrack@extension.io",
+    "shell-version": ["3.38","42","44"],
+    "url": "https://github.com/raj-bunsha/CodeTrack",
+    "icon": "codeforces.png",
+    "version": 4,
+    "applications": {
+        "myextension": {
+            "command": "python manage.py runserver",
+            "name": "My Extension",
+            "description": "Runs Python server with a click"
+        }
+    }
+}

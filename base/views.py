@@ -59,11 +59,14 @@ def challenge_list(request):
         return redirect("challenge")
 
     fd = FetchData.objects.using("problemset").all()
+    # print(fd)
 
     if len(fd) == 0:
+        print("HERE1")
         update_problemset()
 
     elif fd[0].last_update + timedelta(hours=6) < timezone.now():
+        print("HERE")
         update_problemset()
 
     if request.method == "POST":
@@ -89,8 +92,81 @@ def challenge_list(request):
         context["challenges"] = get_challenge(
             handle,
             profile.virtual_rating,
-            [normalized_rating + delta for delta in range(-200, 500, 100)],
+            [normalized_rating + delta for delta in range(-200, 500, 100)],None
         )
+        # context["challenges"] = get_challenge(
+        #     handle,
+        #     profile.virtual_rating,
+        #     [delta for delta in range(800, 4200, 100)],None
+        # )
+    else:
+        context["api_is_down"] = True
+    return render(request, "list.html", context)
+
+def topic_challenge_list(request,topic):
+    print(topic)
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    user = request.user
+    profile = Profile.objects.get(user=user)
+
+    if profile.in_progress:
+        return redirect("challenge")
+
+    fd = FetchData.objects.using("problemset").all()
+    # print(fd)
+
+    if len(fd) == 0:
+        print("HERE1")
+        update_problemset()
+
+    elif fd[0].last_update + timedelta(hours=6) < timezone.now():
+        print("HERE")
+        update_problemset()
+
+    if request.method == "POST":
+        contest_id = request.POST.get("contest_id")
+        index = request.POST.get("index")
+
+        if represents_int(contest_id):
+            return redirect("confirm", contest_id=contest_id, index=index)
+
+    handle = profile.handle
+    rating = profile.virtual_rating
+
+    normalized_rating = rating - rating % 100
+    context = {}
+    context["user"] = user
+    context["profile"] = profile
+    context["state"] = profile.msg
+    context["api_is_down"] = False
+    context["filter"]=topic
+    profile.msg = 0
+    profile.save()
+    context["challenges"] = []
+    #all the tags that correspond to a topic in codeforces are stored in a dictionary
+    popular_topic_tags={
+        "implementation":["implementation","brute force","constructive algorithms"],
+        "dp":["dp"],
+        "greedy":["greedy"],
+        "math":["math","number theory","combinatorics","matrices","probabilities","geometry","binary search"],
+        "games":["games","2-sat"],
+        "graphs":["graphs","dfs and similar","shortest paths","trees","flows","dsu","2-sat"],
+        "strings":["strings","hashing","suffix structures","string suffix structures"],
+        "datastructures":["data structures","dsu","2-sat","schedules","bitmasks"]
+    }
+    if validate_handle(handle):
+        context["challenges"] = get_challenge(
+            handle,
+            profile.virtual_rating,
+            [normalized_rating + delta for delta in range(-200, 500, 100)],popular_topic_tags[topic]
+        )
+        # context["challenges"] = get_challenge(
+        #     handle,
+        #     profile.virtual_rating,
+        #     [delta for delta in range(800, 4200, 100)],None
+        # )
     else:
         context["api_is_down"] = True
     return render(request, "list.html", context)
@@ -129,7 +205,7 @@ def login_view(request):
             user_filter = User.objects.filter(username=username)
 
             if len(user_filter) == 0:
-                context["error"].append("Incase you have changed your handle, please login with the old handle and Arugo will update to your new handle automatically.")
+                context["error"].append("Incase you have changed your handle, please login with the old handle and CodeTrack will update to your new handle automatically.")
 
     return render(request, "login.html", context)
 

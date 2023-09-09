@@ -1,6 +1,6 @@
 {% extends 'main.html' %} {% block content %} {% if api_is_down %}
 <div class="alert alert-danger" role="alert">
-    Codeforces API is currently down :( Please visit Arugo later :(
+    Codeforces API is currently down :( Please visit CodeTrack later :(
 </div>
 {% else %}
 <div class="container">
@@ -17,31 +17,74 @@
     <h3>Manual Challenge Choice</h3>
     <form method="POST">
         {% csrf_token %}
-        <div class="form-group">
-            <label for="contest_id">Contest ID</label>
-            <input
-                type="contest_id"
-                class="form-control"
-                id="contest_id"
-                name="contest_id"
-                placeholder="e.g: '1425'"
-            />
-        </div>
-        <div class="form-group">
-            <label for="index">Problem Index</label>
-            <input
-                type="index"
-                class="form-control"
-                id="index"
-                name="index"
-                placeholder="e.g: 'A'"
-            />
+        <div class="manbar" style="display:flex;width:100%;">
+            <div class="form-group" style="flex-grow: 1;">
+                <label for="contest_id">Contest ID</label>
+                <input
+                    type="contest_id"
+                    class="form-control"
+                    id="contest_id"
+                    name="contest_id"
+                    placeholder="e.g: '1425'"
+                />
+            </div>
+            <div class="form-group" style="flex-grow: 1;">
+                <label for="index">Problem Index</label>
+                <input
+                    type="index"
+                    class="form-control"
+                    id="index"
+                    name="index"
+                    placeholder="e.g: 'A'"
+                />
+            </div>
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
-    <div class="container">
+    <div class="container" style="display:flex;justify-content: space-between;">
         <h3>Suggested Challenge</h3>
+        <div class="btn-group" role="group">
+            <button
+                id="btnGroupDrop1"
+                type="button"
+                class="btn btn-secondary dropdown-toggle"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false">
+                Filter
+            </button>
+            <div class="dropdown-menu" aria-labelledby="btnGroupDrop1" id="dropdown">
+                <a class="dropdown-item" href="/list">All</a>
+                <a class="dropdown-item" href="dp">Dynamic Programming</a>
+                <a class="dropdown-item" href="greedy">Greedy</a>
+                <a class="dropdown-item" href="implementation">Implementation</a>
+                <a class="dropdown-item" href="math">Math</a>
+                <a class="dropdown-item" href="games">Games</a>
+                <a class="dropdown-item" href="graphs">Graphs</a>
+                <a class="dropdown-item" href="strings">Strings</a>
+                <a class="dropdown-item" href="datastructures">Data Structures</a>
+            </div>
+        </div>
     </div>
+    <!-- {% if filter %}
+    <div class="alert alert-info" role="alert">
+        Filter: {{filter}}
+    </div>
+    {% endif %} -->
+    
+    {% if filter %}
+    <script>
+        var dropdown = document.getElementById("dropdown");
+        var items = dropdown.getElementsByClassName("dropdown-item");
+        for (var i = 0; i < items.length; i++) {
+            if (items[i].getAttribute("href") == "{{filter}}") {
+                items[i].classList.add("active");
+            }
+        }
+    </script>
+    {% endif %}
+
+    <!-- Write a menu with a filter button with some topics -->
     {% for problem, color, bg_color, gain, loss, xcolor in challenges %}
     <div
         class="alert container"
@@ -65,4 +108,6 @@
     </div>
     {% endfor %}
 </div>
-{% endif %} {% endblock content %}
+{% endif %}
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+{% endblock content %}

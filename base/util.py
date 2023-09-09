@@ -1,7 +1,7 @@
 from .models import AuthQuery, Problem, Profile
 from django.contrib.auth.models import User
 import json
-from urllib.request import urlopen
+from urllib.request import Request,urlopen
 from .models import Problem, FetchData
 from random import randint
 from datetime import datetime, timedelta
@@ -13,7 +13,7 @@ import requests
 
 def read_data(url):
     try:
-        response = urlopen(url)
+        response = urlopen(Request(url,headers={'User-Agent': 'Mozilla/5.0'}))
         response_data = []
         response_data = json.loads(response.read())
 
@@ -59,13 +59,13 @@ def fetch_problemset():
             name=problem["name"],
             rating=problem["rating"],
             index=problem["index"],
-            
+            tags=str(problem["tags"]),
         )
         p.save(using="problemset")
 
 
 def update_problemset():
-    print("problemset updating")
+    print("problemset uploading")
 
     if len(AuthQuery.objects.all()) > 1000:
         AuthQuery.objects.all().delete()
@@ -74,6 +74,7 @@ def update_problemset():
 
     data = read_data(URL)
 
+    # print("Hey")
     if data == [] or not "problems" in data:
         return
 
@@ -82,7 +83,6 @@ def update_problemset():
     fd.save(using="problemset")
 
     problemset = data["problems"]
-
     for problem in problemset[:30]:
         if (
             problem["type"] != "PROGRAMMING"
@@ -104,7 +104,9 @@ def update_problemset():
             name=problem["name"],
             rating=problem["rating"],
             index=problem["index"],
+            tags=str(problem["tags"]),
         )
+        # print(problem["tags"])
         p.save(using="problemset")
 
 
@@ -127,10 +129,11 @@ def represents_int(s):
 def validate_handle(handle):
     try:
         URL = "https://codeforces.com/api/user.info?handles=" + handle
-        response = urlopen(URL)
+        req=Request(URL,headers={'User-Agent': 'Mozilla/5.0'})
+        response = urlopen(req)
         response_data = json.loads(response.read())
         return response_data["status"] == "OK"
-    except:
+    except Exception as e:
         return False
 
 
@@ -148,13 +151,13 @@ def submission_to_problem(submission):
 
 def rating_color(rating):
     if rating < 1200:
-        return ("gray", "#ebedf0")
+        return ("#gray", "#ebedf0")
 
     elif rating < 1400:
-        return ("green", "#e9f5ea")
+        return ("#00ff00", "#e9f5ea")
 
     elif rating < 1600:
-        return ("cyan", "#e6f7f6")
+        return ("#00ffff", "#e6f7f6")
 
     elif rating < 1900:
         return ("#0700c4", "#e8ecfa")
@@ -177,8 +180,26 @@ def rating_color(rating):
     else:
         return ("#5e010f", "#deb8be")
 
+def true_color_invert(s):
+    s=get_rgb(s)
+    white_bias = 0.1
+    m=1+white_bias
+    shift=white_bias+255-min(s[0],s[1],s[2])-max(s[0],s[1],s[2])
+    ans=[int((shift+s[0])//m), int((shift+s[1])//m), int((shift+s[2])//m)]
+    # print(ans)
+    print("#"+"".join([hex(i)[2:].zfill(2) for i in ans]))
+    return "#"+"".join([hex(i)[2:].zfill(2) for i in ans])
 
-def get_challenge(handle, user_rating, rating):
+def get_rgb(s):
+    if s[0]=="#":
+        s=s[1:]
+        return tuple(int(s[i:i+2], 16) for i in (0, 2, 4))
+
+
+
+def get_challenge(handle, user_rating, rating,filter_tags):
+    # return res
+    #write the code for the filter tags inclidng the one above
     latest_data = get_latest_submissions(handle, 8000)
     latest_data = filter(
         lambda submission: "verdict" in submission and submission["verdict"] == "OK",
@@ -186,42 +207,28 @@ def get_challenge(handle, user_rating, rating):
     )
     problem_id_only = set(map(submission_to_problem, latest_data))
     res = []
-
     for rt in rating:
-        
-        problemset = Problem.objects.using("problemset").filter(rating=rt)
-
-        if len(problemset) == 0:
+        problemset=Problem.objects.using("problemset").filter(rating=rt)
+        if len(problemset)==0:
             continue
-
-        rproblem = None
-
-        for iteration in range(20):
-            problem = problemset[randint(0, len(problemset) - 1)]
-
-            if str(problem.contest_id) + problem.index in problem_id_only:
+        rproblem=None
+        while True:
+            problem=problemset[randint(0,len(problemset)-1)]
+            if filter_tags:
+                for i in eval(problem.tags):
+                    if i in filter_tags:
+                        break
+                else:
+                    continue
+            if str(problem.contest_id)+problem.index in problem_id_only:
                 continue
-
             else:
-                rproblem = problem
+                rproblem=problem
                 break
-
         if rproblem is None:
             continue
-
-        color, bg_color = rating_color(rproblem.rating)
-
-        res.append(
-            (
-                rproblem,
-                color,
-                bg_color,
-                rating_gain(user_rating, rt),
-                rating_loss(user_rating, rt),
-                color_rating_2(rt),
-            )
-        )
-
+        color,bg_color=rating_color(rproblem.rating)[0],rating_color(rproblem.rating)[1]
+        res.append((rproblem,color,bg_color,rating_gain(user_rating,rt),rating_loss(user_rating,rt),color_rating_2(rt)))
     return res
 
 
